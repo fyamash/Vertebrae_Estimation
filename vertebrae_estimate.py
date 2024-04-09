@@ -67,9 +67,9 @@ class Root(tk.Tk):
                https://www.frontiersin.org/journals/neurology/articles/10.3389/fneur.2016.00238/full
             2. Milani, Chantal & Panattoni, G.L.. (2013). 
                 Estimation of stature from the vertebral column in physical and forensic anthropology. 
-            Journal of Biological Research
-            https://www.researchgate.net/publication/276226479_Estimation_of_stature_from_the_vertebra
-            l_column_in_physical_and_forensic_anthropology 
+                Journal of Biological Research
+                https://www.researchgate.net/publication/276226479_Estimation_of_stature_from_the_vertebra
+                l_column_in_physical_and_forensic_anthropology 
         '''
         window = tk.Toplevel(self)
         window.title('About')
