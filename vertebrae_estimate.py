@@ -58,7 +58,8 @@ class Root(tk.Tk):
     def show_about(self):
         text = '''
         GUI written in Python that estimates positions of T12 and S1 relative to C7.
-        Code written by Francis Yamashita. 
+        Code written by Francis Yamashita.
+        Source code: https://github.com/fyamash/Vertebrae_Estimation.git
         Papers Used to estimate vertebrae positions: 
             1. Frostell Arvid , Hakim Ramil , Thelin Eric Peter , Mattsson Per , Svensson Mikael 
                A Review of the Segmental Diameter of the Healthy Human Spinal Cord
