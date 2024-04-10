@@ -12,8 +12,9 @@ class Root(tk.Tk):
         super().__init__()
         self.title("Estimate T12, S1 Locations")
         # set size of window
-        self.geometry('400x230')
-
+        self.geometry('450x200')
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         menubar = tk.Menu()
         # Create the first menu.
         menu = tk.Menu(menubar, tearoff=False)
@@ -33,35 +34,42 @@ class Root(tk.Tk):
         self.t12_est = 0
         self.s1_est = 0
 
-        tk.Label(self, text='Select gender:').grid(row=0, column=0, sticky=tk.W)
-        ttk.Radiobutton(self, text='Male', variable=self.gender, value='M').grid(row=1, column=0, sticky=tk.W, padx=5)
-        ttk.Radiobutton(self, text='Female', variable=self.gender, value='F').grid(row=2, column=0, sticky=tk.W, padx=5)
+        self.frame = tk.Frame(self)
+        self.result_frame = tk.Frame(self)
+        self.frame.grid(column=0, row=0, rowspan=2, sticky="news")
+        self.frame.rowconfigure(0, weight=1)
+        self.result_frame.grid(column=0, row=2, sticky="news")
+        self.result_frame.rowconfigure(0,weight=1)
+
+        tk.Label(self.frame, text='Select gender:').grid(row=0, column=0, sticky=tk.W)
+        ttk.Radiobutton(self.frame, text='Male', variable=self.gender, value='M').grid(row=1, column=0, sticky=tk.W, padx=5)
+        ttk.Radiobutton(self.frame, text='Female', variable=self.gender, value='F').grid(row=2, column=0, sticky=tk.W, padx=5)
         
-        tk.Label(self, text='Select race:').grid(row=0, column=1, sticky=tk.W, padx=15)
+        tk.Label(self.frame, text='Select race:').grid(row=0, column=1, sticky=tk.W, padx=15)
         for i, race in enumerate(race_list):
-            ttk.Radiobutton(self, text=race, variable=self.race, value=race).grid(row=i+1, column=1, sticky=tk.W, padx=20)
+            ttk.Radiobutton(self.frame, text=race, variable=self.race, value=race).grid(row=i+1, column=1, sticky=tk.W, padx=20)
         
         row_idx = len(race_list)+1
-        ttk.Radiobutton(self, text='New race to record', variable=self.race, value='New').grid(row=row_idx, column=1,columnspan=2, sticky=tk.W, padx=20)
-        tk.Entry(self, textvariable=self.new_race, width=10).grid(row=row_idx, column=1, columnspan=2, padx=150)
+        ttk.Radiobutton(self.frame, text='New race to record', variable=self.race, value='New').grid(row=row_idx, column=1,columnspan=2, sticky=tk.W, padx=20)
+        tk.Entry(self.frame, textvariable=self.new_race, width=10).grid(row=row_idx, column=1, columnspan=2, padx=150)
 
-        tk.Label(self, text='Input height (cm):').grid(row=0, column=2, sticky=tk.W)
-        tk.Entry(self, textvariable=self.height, width=10).grid(row=1, column=2, sticky=tk.W, padx=15)
+        tk.Label(self.frame, text='Input height (cm):').grid(row=0, column=2, sticky=tk.W)
+        tk.Entry(self.frame, textvariable=self.height, width=10).grid(row=1, column=2, sticky=tk.W, padx=15)
         
-        tk.Button(self, text='Estimate', command=self.calculate).grid(row=row_idx+1, pady=10, sticky=tk.W, padx=15)
-        tk.Button(self, text='Record Data', command=self.write_to_csv).grid(row=row_idx+1, column=1, columnspan=2, pady=10, sticky=tk.W, padx=15)
+        tk.Button(self.frame, text='Estimate', command=self.calculate).grid(row=row_idx+1, pady=10, sticky=tk.W, padx=15)
+        tk.Button(self.frame, text='Record Data', command=self.write_to_csv).grid(row=row_idx+1, column=1, columnspan=2, pady=10, sticky=tk.W, padx=15)
 
-        ttk.Checkbutton(self, text='Record Actual Distances', variable=self.check, onvalue=1, offvalue=0, command=self.add_distance).grid(row=row_idx+1, column=1, columnspan=2, pady=10)
+        ttk.Checkbutton(self.frame, text='Record Actual Distances', variable=self.check, onvalue=1, offvalue=0, command=self.add_distance).grid(row=row_idx+1, column=1, columnspan=2, pady=10)
         # set record estimations to be 'on' by default:
         # self.check.set('1')
-        self.t12_label = tk.Label(self, text="T12: ")
-        self.s1_label = tk.Label(self, text="S1: ")
-        self.t12_dist = tk.Entry(self, textvariable=self.t12_exact, width=10)
-        self.s1_dist = tk.Entry(self, textvariable=self.s1_exact, width=10)
+        tk.Label(self.result_frame, text="Result: ").grid(row=0, column=0, sticky="NW", padx=20)
+        self.t12_label = tk.Label(self.result_frame, text="T12: ")
+        self.s1_label = tk.Label(self.result_frame, text="S1: ")
+        self.t12_dist = tk.Entry(self.result_frame, textvariable=self.t12_exact, width=10)
+        self.s1_dist = tk.Entry(self.result_frame, textvariable=self.s1_exact, width=10)
 
-        tk.Label(self, text="Result: ").grid(row=row_idx+2, sticky=tk.W, padx=20)
-        self.result = tk.Label(self, text="")
-        self.result.grid(row=row_idx+3, columnspan=3, sticky=tk.W, padx=20)
+        self.result = tk.Label(self.result_frame, text="")
+        self.result.grid(row=1, rowspan=3,sticky=tk.W, padx=20)
 
     def show_about(self):
         text = '''
@@ -118,12 +126,11 @@ class Root(tk.Tk):
             return True
         
     def add_distance(self):
-        row=len(race_list)+3
         if self.check.get():
-            self.t12_label.grid(row=row, column=1, columnspan=2, sticky=tk.W)
-            self.s1_label.grid(row=row, column=1,columnspan=2,sticky=tk.W, padx=100)
-            self.t12_dist.grid(row=row, column=1, columnspan=2,sticky=tk.W, padx=30)
-            self.s1_dist.grid(row=row, column=1, columnspan=2,sticky=tk.W, padx=120)
+            self.t12_label.grid(row=0, column=1, columnspan=2, sticky=tk.W)
+            self.s1_label.grid(row=0, column=1,columnspan=2,sticky=tk.W, padx=100)
+            self.t12_dist.grid(row=0, column=1, columnspan=2,sticky=tk.W, padx=30)
+            self.s1_dist.grid(row=0, column=1, columnspan=2,sticky=tk.W, padx=120)
         else:
             self.t12_label.grid_forget()
             self.s1_label.grid_forget()
