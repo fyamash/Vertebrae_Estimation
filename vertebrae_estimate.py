@@ -12,7 +12,7 @@ class Root(tk.Tk):
         super().__init__()
         self.title("Estimate T12, S1 Locations")
         # set size of window
-        self.geometry('450x200')
+        self.geometry('450x220')
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         menubar = tk.Menu()
@@ -69,7 +69,7 @@ class Root(tk.Tk):
         self.s1_dist = tk.Entry(self.result_frame, textvariable=self.s1_exact, width=10)
 
         self.result = tk.Label(self.result_frame, text="")
-        self.result.grid(row=1, rowspan=3,sticky=tk.W, padx=20)
+        self.result.grid(row=1, rowspan=2, columnspan=2,sticky=tk.W, padx=20)
 
     def show_about(self):
         text = '''
@@ -127,10 +127,10 @@ class Root(tk.Tk):
         
     def add_distance(self):
         if self.check.get():
-            self.t12_label.grid(row=0, column=1, columnspan=2, sticky=tk.W)
-            self.s1_label.grid(row=0, column=1,columnspan=2,sticky=tk.W, padx=100)
-            self.t12_dist.grid(row=0, column=1, columnspan=2,sticky=tk.W, padx=30)
-            self.s1_dist.grid(row=0, column=1, columnspan=2,sticky=tk.W, padx=120)
+            self.t12_label.grid(row=0, column=1, sticky=tk.W)
+            self.t12_dist.grid(row=0, column=1,sticky=tk.W, padx=30)
+            self.s1_label.grid(row=0, column=1, sticky=tk.W, padx=100)
+            self.s1_dist.grid(row=0, column=1,sticky=tk.W, padx=120)
         else:
             self.t12_label.grid_forget()
             self.s1_label.grid_forget()
