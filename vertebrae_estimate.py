@@ -5,7 +5,7 @@ from tkinter import messagebox
 import csv
 
 # Add new races to list if user wants them to show on GUI
-race_list=['White', 'Black', 'South Indian'] 
+race_list=['White American', 'Black American', 'South Indian'] 
 
 class Root(tk.Tk):
     def __init__(self):
@@ -20,12 +20,15 @@ class Root(tk.Tk):
         menubar.add_cascade(menu=menu, label="Help")
         menu.add_command(label="About", command=self.show_about)
         menu.add_command(label="Export as exe", command=self.show_exe)
+        menu.add_command(label="New models", command=self.show_new_model)
         self.config(menu=menubar)
 
         self.gender = tk.StringVar(self,'')
         self.race = tk.StringVar(self,'')
         self.height = tk.StringVar(self,'')
         self.new_race = tk.StringVar(self,'')
+        self.t12_exact = tk.StringVar(self,'')
+        self.s1_exact = tk.StringVar(self,'')
         self.check = tk.IntVar()
         self.t12_est = 0
         self.s1_est = 0
@@ -47,9 +50,14 @@ class Root(tk.Tk):
         
         tk.Button(self, text='Estimate', command=self.calculate).grid(row=row_idx+1, pady=10, sticky=tk.W, padx=15)
         tk.Button(self, text='Record Data', command=self.write_to_csv).grid(row=row_idx+1, column=1, columnspan=2, pady=10, sticky=tk.W, padx=15)
-        ttk.Checkbutton(self, text='Record Estimations', variable=self.check, onvalue=1, offvalue=0).grid(row=row_idx+1, column=1, columnspan=2, pady=10)
+
+        ttk.Checkbutton(self, text='Record Actual Distances', variable=self.check, onvalue=1, offvalue=0, command=self.add_distance).grid(row=row_idx+1, column=1, columnspan=2, pady=10)
         # set record estimations to be 'on' by default:
         # self.check.set('1')
+        self.t12_label = tk.Label(self, text="T12: ")
+        self.s1_label = tk.Label(self, text="S1: ")
+        self.t12_dist = tk.Entry(self, textvariable=self.t12_exact, width=10)
+        self.s1_dist = tk.Entry(self, textvariable=self.s1_exact, width=10)
 
         tk.Label(self, text="Result: ").grid(row=row_idx+2, sticky=tk.W, padx=20)
         self.result = tk.Label(self, text="")
@@ -57,8 +65,8 @@ class Root(tk.Tk):
 
     def show_about(self):
         text = '''
-        GUI written in Python that estimates positions of T12 and S1 relative to C7.
-        Code written by Francis Yamashita.
+        GUI written in Python that estimates positions of T12 and S1 relative to C7 and records data in a csv file.
+        Code written by Francis Yamashita. 
         Source code: https://github.com/fyamash/Vertebrae_Estimation.git
         Papers Used to estimate vertebrae positions: 
             1. Frostell Arvid , Hakim Ramil , Thelin Eric Peter , Mattsson Per , Svensson Mikael 
@@ -73,7 +81,7 @@ class Root(tk.Tk):
         '''
         window = tk.Toplevel(self)
         window.title('About')
-        window.geometry('550x300')
+        window.geometry('600x300')
         label = tk.Label(window, text=text, justify="left")
         label.pack()
         close_button = tk.Button(window, text="Close", command=window.destroy)
@@ -87,6 +95,17 @@ class Root(tk.Tk):
         '''
         messagebox.showinfo("EXE", text)
 
+    def show_new_model(self):
+        text = '''
+        Suggestions for generating new prediction models:
+        Linear Regression
+        A perceptron
+        Simple NNs
+        Decision tree
+        https://scikit-learn.org/stable/auto_examples/ensemble/plot_adaboost_regression.html#sphx-glr-auto-examples-ensemble-plot-adaboost-regression-py 
+        '''
+        messagebox.showinfo("New Model", text)
+
     def valid_input(self):
         if self.gender.get() == '' or self.race.get() == '':
             self.result.config(text="Please select a gender and race.")
@@ -97,9 +116,24 @@ class Root(tk.Tk):
             return False
         else:
             return True
+        
+    def add_distance(self):
+        row=len(race_list)+3
+        if self.check.get():
+            self.t12_label.grid(row=row, column=1, columnspan=2, sticky=tk.W)
+            self.s1_label.grid(row=row, column=1,columnspan=2,sticky=tk.W, padx=100)
+            self.t12_dist.grid(row=row, column=1, columnspan=2,sticky=tk.W, padx=30)
+            self.s1_dist.grid(row=row, column=1, columnspan=2,sticky=tk.W, padx=120)
+        else:
+            self.t12_label.grid_forget()
+            self.s1_label.grid_forget()
+            self.t12_dist.grid_forget()
+            self.s1_dist.grid_forget()
+        return
 
     def calculate(self):
         self.result.configure(text='')
+        # % of vertebral column obtained from paper 1 in about menu. 
         c7_t12 = 0.5035
         c7_s1 = 0.827
         if not self.valid_input():
@@ -113,13 +147,14 @@ class Root(tk.Tk):
             self.result.config(text="Please input the height in cm.")
             return
         match race:
-            case 'White':
+            # Linear regression model obtained from paper 2 in about menu
+            case 'White American':
                 # White Americans
                 if gender == 'M':
                     cl = (height - 47.26)/2.07
                 else:
                     cl = (height - 29.74)/2.33
-            case 'Black':
+            case 'Black American':
                 # Black Americans
                 if gender == 'M':
                     cl = (height - 29.4)/2.42
@@ -145,15 +180,18 @@ class Root(tk.Tk):
         elif self.race.get() == 'New' and self.new_race.get() == '':
             self.result.config(text="Please input the new race to record to file.")
             return
+        elif self.check.get() and (self.t12_exact.get() == '' or self.s1_exact.get() == ''):
+            self.result.config(text="Please input the exact measurements of T12 and S1.")
+            return
         try:
             filename = askopenfilename()
-            with open(filename, "a", newline='') as file:  # Open file in append mode
+            with open(filename, "a", newline='') as file:
                 writer = csv.writer(file)
                 if self.check.get():
+                    data = [self.gender.get(), self.race.get(), self.height.get(), self.t12_exact.get(), self.s1_exact.get()]
+                else:
                     self.calculate()
                     data = [self.gender.get(), self.race.get(), self.height.get(), self.t12_est, self.s1_est]
-                else:
-                    data = [self.gender.get(), self.race.get(), self.height.get()]
                 writer.writerow(data)
             self.result.config(text=f"{data} has been recorded in {filename}")
         except Exception as e:
