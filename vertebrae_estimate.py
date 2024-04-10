@@ -190,6 +190,9 @@ class Root(tk.Tk):
         elif self.check.get() and (self.t12_exact.get() == '' or self.s1_exact.get() == ''):
             self.result.config(text="Please input the exact measurements of T12 and S1.")
             return
+        elif self.race.get() == 'New' and not self.check.get():
+            self.result.config(text="Please select the Record Actual Distances and input distances.")
+            return
         try:
             filename = askopenfilename()
             with open(filename, "a", newline='') as file:
